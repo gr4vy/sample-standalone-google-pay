@@ -9,7 +9,7 @@ const config = {
   currency: "USD",
   gr4vyId: "spider",
   merchantAccountId: "default",
-  sandbox: false
+  sandbox: true
 };
 
 const baseUrl = `https://api.${config.sandbox ? "sandbox." : ""}${config.gr4vyId}.gr4vy.app`;
