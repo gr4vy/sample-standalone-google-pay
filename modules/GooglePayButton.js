@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-const GooglePayButton = ({ config, onSuccess }) => {
+const GooglePayButton = ({ config, session, onSuccess }) => {
   const [client, setClient] = useState()
   const [readyToPay, setReadyToPay] = useState(false)
   const ref = useRef()
@@ -10,13 +10,13 @@ const GooglePayButton = ({ config, onSuccess }) => {
     apiVersionMinor: 0
   };
 
-  const gatewayMerchantId = `app.gr4vy.${config.sandbox ? 'sandbox.' : ''}${config.gr4vyId}.default`
+  // const gatewayMerchantId = `app.gr4vy.${config.sandbox ? 'sandbox.' : ''}${config.gr4vyId}.default`
 
   const tokenizationSpecification = {
     type: 'PAYMENT_GATEWAY',
     parameters: {
       'gateway': 'gr4vy',
-      'gatewayMerchantId': gatewayMerchantId
+      'gatewayMerchantId': session.gateway_merchant_id
     }
   };
 
@@ -76,10 +76,19 @@ const GooglePayButton = ({ config, onSuccess }) => {
       countryCode: config.country
     };
 
+    // paymentDataRequest.merchantInfo = {
+    //   merchantName: 'Sample',
+    //   merchantId: gatewayMerchantId
+    // };
+
     paymentDataRequest.merchantInfo = {
-      merchantName: 'Sample',
-      merchantId: gatewayMerchantId
-    };
+      authJwt: session.token,
+      merchantId: 'BCR2DN4T7C3KX6DY', 
+      merchantName: "Sample",
+      merchantOrigin: window.location.hostname,
+   },
+
+   console.log(paymentDataRequest)
 
     client.loadPaymentData(paymentDataRequest).then(paymentData => {
       const paymentToken = paymentData.paymentMethodData.tokenizationData.token;

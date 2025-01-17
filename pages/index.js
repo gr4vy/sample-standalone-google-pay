@@ -9,12 +9,15 @@ const config = {
   currency: "USD",
   gr4vyId: "spider",
   merchantAccountId: "default",
-  sandbox: true
+  sandbox: false
 };
+
+const baseUrl = `https://api.${config.sandbox ? "sandbox." : ""}${config.gr4vyId}.gr4vy.app`;
 
 const Home = () => {
   // Fetch an API token server side
   const [token, setToken] = useState(null);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -26,9 +29,28 @@ const Home = () => {
     fetchToken().then((token) => setToken(token));
   }, []);
 
+  useEffect(() => {
+    const fetchSession = async () => {
+      const response = await fetch(`${baseUrl}/digital-wallets/google/session`, {
+        method: "POST",
+        body: JSON.stringify({
+          "origin_domain": window.location.hostname
+        }),
+        headers: {
+          Authorization: `bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return await response.json();
+    };
+
+    if (token) {
+      fetchSession().then((session) => setSession(session));
+    }
+  }, [token]);
+
   // Create a google pay transaction
   const onSuccess = async (googlePayToken) => {
-    const baseUrl = `https://api.${config.sandbox ? "sandbox." : ""}${config.gr4vyId}.gr4vy.app`;
     const response = await fetch(`${baseUrl}/transactions`, {
       method: "POST",
       headers: {
@@ -62,9 +84,10 @@ const Home = () => {
         </script>
       </Head>
       <main>
-        {token && (
+        {token && session && (
           <GooglePayButton
             config={config}
+            session={session}
             onSuccess={onSuccess}
           />
         )}
